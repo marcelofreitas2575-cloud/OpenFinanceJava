@@ -1,0 +1,18 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: mock-institution-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/mock_institution_db
+
+mock-institution:
+  api-key: mock-bank-secret-key
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

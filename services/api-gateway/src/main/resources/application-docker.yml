@@ -1,0 +1,5 @@
+services:
+  keycloak-uri: http://keycloak:8080
+  consent-uri: http://consent-service:8082
+  account-uri: http://account-service:8083
+  transaction-uri: http://transaction-service:8084

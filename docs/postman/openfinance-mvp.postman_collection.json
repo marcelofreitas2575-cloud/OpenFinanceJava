@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "Open Finance Fake MVP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "gatewayUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "consentId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1 Keycloak Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "password" },
+            { "key": "client_id", "value": "openfinance-app" },
+            { "key": "username", "value": "demo" },
+            { "key": "password", "value": "demo123" }
+          ]
+        },
+        "url": "{{gatewayUrl}}/realms/openfinance/protocol/openid-connect/token"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('accessToken', json.access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 Create Consent",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Correlation-Id", "value": "postman-demo-001" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"permissions\": [\"ACCOUNTS\", \"TRANSACTIONS\"]\n}"
+        },
+        "url": "{{gatewayUrl}}/open-banking/v1/consents"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('consentId', json.data.consentId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 List Accounts",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "X-Consent-Id", "value": "{{consentId}}" }
+        ],
+        "url": "{{gatewayUrl}}/open-banking/v1/accounts"
+      }
+    },
+    {
+      "name": "4 List Transactions",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "X-Consent-Id", "value": "{{consentId}}" }
+        ],
+        "url": "{{gatewayUrl}}/open-banking/v1/accounts/acc-checking-001/transactions"
+      }
+    }
+  ]
+}

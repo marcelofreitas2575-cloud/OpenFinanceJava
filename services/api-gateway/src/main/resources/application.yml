@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: keycloak
+          uri: ${services.keycloak-uri:http://localhost:8180}
+          predicates:
+            - Path=/realms/**
+        - id: transaction-service
+          uri: ${services.transaction-uri:http://localhost:8084}
+          predicates:
+            - Path=/open-banking/v1/accounts/*/transactions/**
+        - id: account-service
+          uri: ${services.account-uri:http://localhost:8083}
+          predicates:
+            - Path=/open-banking/v1/accounts/**
+        - id: consent-service
+          uri: ${services.consent-uri:http://localhost:8082}
+          predicates:
+            - Path=/open-banking/v1/consents/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
