@@ -2,15 +2,21 @@
 
 Portfólio técnico: compartilhamento bancário com consentimento, em microsserviços Java.
 
-## Visão rápida (recrutador)
+## Visão rápida
 
 - **Problema:** simular Open Finance — o cliente autoriza uma instituição (iniciadora) a acessar **contas e extrato** mantidos em outra instituição (detentora mock), com rastreio de consentimento e APIs para consulta.
 - **Fluxo:** app → **POST consent** → Kafka → sync de **contas** no mock → Kafka → sync de **transações** → app consulta **GET accounts/transactions** com JWT + `X-Consent-Id`.
-- **Tecnologias:** Java 17, Spring Boot 3.4, Spring Kafka, Spring Cloud Gateway, MongoDB, Redis, Docker Compose, Keycloak (JWT). Monorepo Maven, arquitetura hexagonal, lib `openfinance-events`.
+- **Tecnologias:** Java 17, Spring Boot 3.4, Spring Kafka, Spring Cloud Gateway, MongoDB, Redis, Docker Compose, Keycloak (JWT). Monorepo Maven, lib compartilhada `openfinance-events`.
 - **Como rodar:** `docker compose up --build` → token Keycloak (`demo` / `demo123`) → Postman ou passos abaixo. Kafka UI: `http://localhost:8099`.
 - **O que foi desenhado:** **HTTP síncrono** na borda (gateway, APIs Open Banking, chamadas ao mock-institution) e **Kafka assíncrono** entre serviços internos (consent → account → transaction), com retry/DLQ nos consumers — desacoplando consentimento da sincronização pesada.
 
-> Projeto educacional; não representa conformidade regulatória Open Finance Brasil.
+### Código (Clean Code + SOLID)
+
+- **Hexagonal (ports & adapters):** regras em `application/*UseCase` e `domain`; HTTP, Kafka, Mongo e Redis ficam nos adapters — o núcleo não conhece Spring nem detalhes de infra.
+- **SOLID na prática:** *Single Responsibility* (um use case por operação, ex. `SyncAccountsUseCase`); *Dependency Inversion* (domínio depende de `*Port`, implementações em `adapter/out/*`); *Open/Closed* (trocar mock por API real = novo adapter, mesma port).
+- **Clean Code:** nomes diretos (`ConsentCreatedKafkaConsumer`, `InstitutionPort`), controllers/consumers finos (só traduzem entrada e delegam), validações e fluxo de negócio fora dos adapters web.
+
+> Projeto pessoal; não representa conformidade regulatória Open Finance Brasil.
 
 ## Serviços
 
