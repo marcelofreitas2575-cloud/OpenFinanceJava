@@ -266,12 +266,12 @@
 
     <section id="panel-kafka" role="tabpanel" aria-labelledby="tab-kafka" hidden>
       <div class="legend">
-        <span><span class="dot" style="background:var(--kafka)"></span> publish → tópico</span>
-        <span><span class="dot" style="background:#fde68a"></span> consume (@KafkaListener)</span>
-        <span><span class="dot" style="background:var(--mock)"></span> HTTP após consume</span>
-        <span><span class="dot" style="background:var(--mongo)"></span> Mongo / Redis</span>
+        <span><span class="dot" style="background:var(--kafka)"></span> publish (sólido)</span>
+        <span><span class="dot" style="background:#fde68a"></span> consume (tracejado)</span>
+        <span><span class="dot" style="background:var(--mock)"></span> Sincronização (HTTP)</span>
+        <span><span class="dot" style="background:#4ade80"></span> Persistência (Mongo)</span>
       </div>
-      <svg viewBox="0 0 960 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline Kafka produtores tópicos consumidores">
+      <svg viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline Kafka com Etapas A B C">
         <defs>
           <marker id="arrK" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
             <path d="M0,0 L8,4 L0,8 Z" fill="#fbbf24"/>
@@ -288,106 +288,105 @@
           </linearGradient>
         </defs>
 
-        <text x="480" y="28" text-anchor="middle" fill="#64748b" font-size="12">Pipeline event-driven — produtores · broker · consumidores (padrão comum em diagramas Kafka)</text>
+        <text x="500" y="28" text-anchor="middle" fill="#64748b" font-size="12">Pipeline Kafka: ETAPA A → ETAPA B → ETAPA C (fluxo assíncrono coordenado)</text>
 
-        <!-- Etapa A -->
-        <text x="48" y="72" fill="#94a3b8" font-size="10" font-weight="600">ETAPA A</text>
-        <rect x="24" y="82" width="168" height="72" rx="10" fill="#1e293b" stroke="#64748b"/>
-        <text x="108" y="108" text-anchor="middle" fill="#e7ecf3" font-size="13">consent-service</text>
-        <text x="108" y="128" text-anchor="middle" fill="#fde68a" font-size="9">Producer</text>
-        <text x="108" y="144" text-anchor="middle" fill="#94a3b8" font-size="8">após POST + save Mongo</text>
+        <!-- ETAPA A: consent-service (esquerda em cima) -->
+        <g>
+          <text x="60" y="68" fill="#94a3b8" font-size="11" font-weight="600">ETAPA A</text>
+          <rect x="24" y="82" width="160" height="68" rx="10" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+          <text x="104" y="106" text-anchor="middle" fill="#e7ecf3" font-size="12">consent-service</text>
+          <text x="104" y="124" text-anchor="middle" fill="#fde68a" font-size="9">Publisher</text>
+          <text x="104" y="138" text-anchor="middle" fill="#94a3b8" font-size="8">pós POST + save</text>
+        </g>
 
-        <rect x="220" y="78" width="200" height="80" rx="8" fill="url(#brokerGrad)" stroke="#fbbf24"/>
-        <text x="320" y="102" text-anchor="middle" fill="#fde68a" font-size="10" font-weight="600">TÓPICO</text>
-        <text x="320" y="122" text-anchor="middle" fill="#fcd34d" font-size="9">of.consent.created.v1</text>
-        <text x="320" y="138" text-anchor="middle" fill="#94a3b8" font-size="8">payload: consentId, customerId…</text>
-        <text x="320" y="152" text-anchor="middle" fill="#64748b" font-size="7">group: account-service</text>
+        <!-- Seta A → Tópico A -->
+        <line x1="184" y1="116" x2="244" y2="116" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrK)"/>
+        <text x="214" y="108" fill="#fde68a" font-size="8">publish</text>
 
-        <rect x="448" y="82" width="200" height="96" rx="10" fill="#1e293b" stroke="#fbbf24" stroke-width="1.5"/>
-        <text x="548" y="108" text-anchor="middle" fill="#e7ecf3" font-size="13">account-service</text>
-        <text x="548" y="128" text-anchor="middle" fill="#bbf7d0" font-size="9">Consumer</text>
-        <text x="548" y="144" text-anchor="middle" fill="#94a3b8" font-size="8">ConsentCreatedKafkaConsumer</text>
-        <text x="548" y="158" text-anchor="middle" fill="#94a3b8" font-size="8">@KafkaListener · SyncAccountsUseCase</text>
-        <text x="548" y="172" text-anchor="middle" fill="#f87171" font-size="8">+ Redis cache consentId→customerId</text>
+        <!-- TÓPICO A: Kafka central (em cima) -->
+        <g>
+          <rect x="244" y="72" width="220" height="88" rx="10" fill="url(#brokerGrad)" stroke="#fbbf24" stroke-width="2"/>
+          <text x="354" y="100" text-anchor="middle" fill="#fde68a" font-size="11" font-weight="600">KAFKA BROKER</text>
+          <text x="354" y="120" text-anchor="middle" fill="#fcd34d" font-size="9">of.consent.created.v1</text>
+          <text x="354" y="136" text-anchor="middle" fill="#94a3b8" font-size="8">consentId, customerId…</text>
+        </g>
 
-        <line x1="192" y1="118" x2="218" y2="118" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrK)"/>
-        <text x="205" y="110" fill="#fde68a" font-size="8">publish</text>
-        <line x1="420" y1="118" x2="446" y2="118" stroke="#fcd34d" stroke-width="2.5" marker-end="url(#arrK)"/>
-        <text x="428" y="110" fill="#bbf7d0" font-size="8">poll / consume</text>
+        <!-- Seta Tópico A → ETAPA B Consumer -->
+        <line x1="354" y1="160" x2="354" y2="200" stroke="#fcd34d" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#arrK)"/>
+        <text x="366" y="184" fill="#bbf7d0" font-size="8">consume</text>
 
-        <!-- Broker frame central -->
-        <rect x="24" y="200" width="912" height="168" rx="14" fill="none" stroke="#57534e" stroke-width="1" stroke-dasharray="8 6"/>
-        <text x="48" y="224" fill="#78716c" font-size="10" font-weight="600">KAFKA BROKER (KRaft · docker compose)</text>
-        <text x="820" y="224" text-anchor="end" fill="#57534e" font-size="9">tópicos *.dlq · ver aba DLQ</text>
+        <!-- ETAPA B: account-service (centro em baixo) -->
+        <g>
+          <text x="260" y="222" fill="#94a3b8" font-size="11" font-weight="600">ETAPA B</text>
+          <rect x="244" y="236" width="220" height="100" rx="10" fill="#1e293b" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="354" y="262" text-anchor="middle" fill="#e7ecf3" font-size="12">account-service</text>
+          <text x="354" y="280" text-anchor="middle" fill="#bbf7d0" font-size="9">Consumer</text>
+          <text x="354" y="296" text-anchor="middle" fill="#94a3b8" font-size="8">ConsentCreatedKafkaConsumer</text>
+          <text x="354" y="310" text-anchor="middle" fill="#94a3b8" font-size="8">@KafkaListener</text>
+          <text x="354" y="324" text-anchor="middle" fill="#f87171" font-size="8">+ Redis cache consentId</text>
+        </g>
 
-        <rect x="48" y="240" width="864" height="108" rx="10" fill="url(#brokerGrad)" stroke="#fbbf24" stroke-width="2"/>
-        <text x="480" y="268" text-anchor="middle" fill="#fde68a" font-size="14" font-weight="600">Logs de tópicos (mensagens persistidas até retention)</text>
+        <!-- Seta B → Sincronização (HTTP ao mock) -->
+        <line x1="464" y1="286" x2="544" y2="286" stroke="#fb923c" stroke-width="2" marker-end="url(#arrSide)"/>
+        <text x="500" y="278" fill="#fdba74" font-size="8">HTTP</text>
 
-        <rect x="72" y="284" width="190" height="48" rx="6" fill="#422006" stroke="#fcd34d"/>
-        <text x="167" y="304" text-anchor="middle" fill="#fcd34d" font-size="9">of.consent.created.v1</text>
-        <text x="167" y="320" text-anchor="middle" fill="#94a3b8" font-size="8">+ of.consent.revoked.v1</text>
+        <!-- Sincronização B (direita da B) -->
+        <g>
+          <rect x="544" y="236" width="220" height="100" rx="10" fill="#431407" stroke="#fb923c" stroke-width="2"/>
+          <text x="654" y="256" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">Sincronização com</text>
+          <text x="654" y="270" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">fonte de dados</text>
+          <text x="654" y="290" text-anchor="middle" fill="#e7ecf3" font-size="11">mock-institution</text>
+          <text x="654" y="306" text-anchor="middle" fill="#94a3b8" font-size="8">GET /accounts</text>
+          <text x="654" y="320" text-anchor="middle" fill="#4ade80" font-size="8">→ Mongo account_db</text>
+        </g>
 
-        <rect x="290" y="284" width="220" height="48" rx="6" fill="#422006" stroke="#fcd34d"/>
-        <text x="400" y="304" text-anchor="middle" fill="#fcd34d" font-size="9">of.account.sync.completed.v1</text>
-        <text x="400" y="320" text-anchor="middle" fill="#94a3b8" font-size="8">+ of.account.sync.failed.v1</text>
+        <!-- Seta B → Publica novo evento -->
+        <line x1="354" y1="336" x2="354" y2="376" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrK)"/>
+        <text x="366" y="360" fill="#fde68a" font-size="8">publica</text>
 
-        <rect x="538" y="284" width="350" height="48" rx="6" fill="#450a0a" stroke="#f87171" stroke-dasharray="4 2"/>
-        <text x="712" y="312" text-anchor="middle" fill="#fecaca" font-size="9">*.dlq (ex. of.consent.created.v1.dlq) — após 3 retries</text>
+        <!-- TÓPICO B: novo evento -->
+        <g>
+          <rect x="244" y="376" width="220" height="72" rx="10" fill="url(#brokerGrad)" stroke="#fbbf24" stroke-width="2"/>
+          <text x="354" y="402" text-anchor="middle" fill="#fcd34d" font-size="9">of.account.sync.completed.v1</text>
+          <text x="354" y="420" text-anchor="middle" fill="#94a3b8" font-size="8">accountIds, consentId…</text>
+        </g>
 
-        <!-- Etapa B side effects account -->
-        <rect x="680" y="82" width="256" height="96" rx="10" fill="#431407" stroke="#fb923c"/>
-        <text x="808" y="108" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">Sincronização com</text>
-        <text x="808" y="122" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">fonte de dados</text>
-        <text x="808" y="142" text-anchor="middle" fill="#e7ecf3" font-size="11">mock-institution</text>
-        <text x="808" y="158" text-anchor="middle" fill="#94a3b8" font-size="8">GET contas → Mongo account_db</text>
-        <text x="808" y="172" text-anchor="middle" fill="#94a3b8" font-size="8">(fora do Kafka)</text>
+        <!-- Seta Tópico B → ETAPA C -->
+        <line x1="354" y1="448" x2="354" y2="488" stroke="#fcd34d" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#arrK)"/>
+        <text x="366" y="472" fill="#bbf7d0" font-size="8">consume</text>
 
-        <path d="M 648 130 L 678 130" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrSide)"/>
-        <text x="660" y="122" fill="#fdba74" font-size="8">HTTP</text>
+        <!-- ETAPA C: transaction-service (esquerda em baixo) -->
+        <g>
+          <text x="60" y="510" fill="#94a3b8" font-size="11" font-weight="600">ETAPA C</text>
+          <rect x="24" y="524" width="220" height="100" rx="10" fill="#1e293b" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="134" y="550" text-anchor="middle" fill="#e7ecf3" font-size="12">transaction-service</text>
+          <text x="134" y="568" text-anchor="middle" fill="#bbf7d0" font-size="9">Consumer</text>
+          <text x="134" y="584" text-anchor="middle" fill="#94a3b8" font-size="8">AccountSyncCompletedConsumer</text>
+          <text x="134" y="598" text-anchor="middle" fill="#94a3b8" font-size="8">@KafkaListener</text>
+        </g>
 
-        <!-- Etapa B publish -->
-        <rect x="448" y="388" width="200" height="72" rx="10" fill="#1e293b" stroke="#fbbf24"/>
-        <text x="548" y="414" text-anchor="middle" fill="#e7ecf3" font-size="13">account-service</text>
-        <text x="548" y="432" text-anchor="middle" fill="#fde68a" font-size="9">Producer (sync OK)</text>
-        <text x="548" y="448" text-anchor="middle" fill="#94a3b8" font-size="8">AccountKafkaPublisherAdapter</text>
+        <!-- Seta C → Sincronização (HTTP ao mock) -->
+        <line x1="244" y1="574" x2="324" y2="574" stroke="#fb923c" stroke-width="2" marker-end="url(#arrSide)"/>
+        <text x="280" y="566" fill="#fdba74" font-size="8">HTTP</text>
 
-        <line x1="548" y1="178" x2="548" y2="386" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrKThin)"/>
-        <text x="560" y="280" fill="#fde68a" font-size="8">publica account.sync.completed</text>
+        <!-- Sincronização C (direita da C) -->
+        <g>
+          <rect x="324" y="524" width="220" height="100" rx="10" fill="#431407" stroke="#fb923c" stroke-width="2"/>
+          <text x="434" y="544" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">Sincronização com</text>
+          <text x="434" y="558" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">fonte de dados</text>
+          <text x="434" y="578" text-anchor="middle" fill="#e7ecf3" font-size="11">mock-institution</text>
+          <text x="434" y="594" text-anchor="middle" fill="#94a3b8" font-size="8">GET /transactions</text>
+          <text x="434" y="608" text-anchor="middle" fill="#4ade80" font-size="8">→ Mongo transaction_db</text>
+        </g>
 
-        <rect x="220" y="392" width="200" height="64" rx="8" fill="url(#brokerGrad)" stroke="#fbbf24"/>
-        <text x="320" y="420" text-anchor="middle" fill="#fcd34d" font-size="9">of.account.sync.completed.v1</text>
-        <text x="320" y="438" text-anchor="middle" fill="#94a3b8" font-size="8">accountIds, consentId…</text>
+        <!-- DLQ nota -->
+        <text x="700" y="436" text-anchor="middle" fill="#94a3b8" font-size="9">Tópicos DLQ:</text>
+        <text x="700" y="452" text-anchor="middle" fill="#94a3b8" font-size="9">*.dlq após 3 retries</text>
+        <rect x="600" y="420" width="200" height="48" rx="6" fill="#450a0a" stroke="#f87171" stroke-dasharray="4 2"/>
+        <text x="700" y="448" text-anchor="middle" fill="#fecaca" font-size="9">(ver aba DLQ)</text>
 
-        <line x1="448" y1="424" x2="422" y2="424" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrK)"/>
-
-        <!-- Etapa C transaction -->
-        <text x="48" y="502" fill="#94a3b8" font-size="10" font-weight="600">ETAPA C</text>
-        <rect x="24" y="512" width="220" height="96" rx="10" fill="#1e293b" stroke="#fbbf24" stroke-width="1.5"/>
-        <text x="134" y="538" text-anchor="middle" fill="#e7ecf3" font-size="13">transaction-service</text>
-        <text x="134" y="558" text-anchor="middle" fill="#bbf7d0" font-size="9">Consumer</text>
-        <text x="134" y="574" text-anchor="middle" fill="#94a3b8" font-size="8">AccountSyncCompletedConsumer</text>
-        <text x="134" y="590" text-anchor="middle" fill="#94a3b8" font-size="8">@KafkaListener · SyncTransactionsUseCase</text>
-
-        <line x1="320" y1="456" x2="320" y2="490" stroke="#fcd34d" stroke-width="2" marker-end="url(#arrK)"/>
-        <line x1="320" y1="490" x2="134" y2="510" stroke="#fcd34d" stroke-width="2" marker-end="url(#arrK)"/>
-        <text x="220" y="488" fill="#bbf7d0" font-size="8">consume · group transaction-service</text>
-
-        <rect x="280" y="512" width="256" height="96" rx="10" fill="#431407" stroke="#fb923c"/>
-        <text x="408" y="538" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">Sincronização com</text>
-        <text x="408" y="552" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600">fonte de dados</text>
-        <text x="408" y="572" text-anchor="middle" fill="#e7ecf3" font-size="11">mock-institution</text>
-        <text x="408" y="588" text-anchor="middle" fill="#94a3b8" font-size="8">GET /transactions → Mongo transaction_db</text>
-
-        <line x1="244" y1="560" x2="278" y2="560" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrSide)"/>
-
-        <rect x="580" y="512" width="356" height="96" rx="10" fill="#1a2332" stroke="#2d3a4f"/>
-        <text x="758" y="542" text-anchor="middle" fill="#7dd3fc" font-size="11" font-weight="600">O que NÃO vai no Kafka</text>
-        <text x="758" y="562" text-anchor="middle" fill="#94a3b8" font-size="9">Saldos, extrato completo, PDF — só eventos leves</text>
-        <text x="758" y="580" text-anchor="middle" fill="#94a3b8" font-size="9">api-gateway nunca publica/consome tópicos</text>
-        <text x="758" y="598" text-anchor="middle" fill="#4ade80" font-size="9">Cliente lê via GET HTTP (aba Mapa HTTP ③)</text>
-
-        <!-- revoked listener note -->
-        <text x="480" y="628" text-anchor="middle" fill="#64748b" font-size="9">consent.revoked: account e transaction consomem para limpar cache Redis (sem sync)</text>
+        <!-- Final note -->
+        <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="9">Kafka coordena <em>quando</em> sincronizar; conteúdo bancário vem sempre do mock-institution</text>
       </svg>
       <p class="note" style="border-left-color:#fbbf24">
         <strong>Como ler:</strong> siga A → B → C na horizontal. Cada <em>consume</em> dispara trabalho local + HTTP ao mock. Kafka coordena <em>quando</em> sincronizar; o <em>conteúdo</em> bancário vem sempre do mock-institution.
